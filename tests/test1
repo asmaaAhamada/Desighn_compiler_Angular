@@ -1,0 +1,184 @@
+import { CommonModule } from '@angular/common';
+import  {Component} from '@angular/core';
+
+import { EventEmitter } from '@angular/core';
+
+({
+selector: 'app-socks',
+  standalone: true,
+  template: `
+    <div class="product-card" (click)="selectProduct()">
+      <img src="assets/images/image.png" alt="shampoo" />
+      <h3>shampoo</h3>
+    </div>
+  `,
+  styles: [`
+    .product-card {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .product-card:hover {
+      background-color: #f9f9f9;
+    }
+  `]
+})
+
+export class ShampooComponent {
+  @Output() productSelected = new EventEmitter<any>();
+  selectProduct() {
+    this.productSelected.emit({
+      name: 'shampoo',
+      image: 'assets/images/image.png',
+      description: 'High quality hair nourishing shampoo.'
+    });
+  }
+}
+
+
+@Component({
+selector: 'app-soap',
+  standalone: true,
+  template: `
+    <div class="product-card" (click)="selectProduct()">
+      <img src="assets/images/soap.png" alt="soap" />
+      <h3>soap</h3>
+    </div>
+  `,
+  styles: [`
+    .product-card {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .product-card:hover {
+      background-color: #f9f9f9;
+    }
+  `]
+})
+export class SoapComponent {
+  @Output() productSelected = new EventEmitter<any>();
+
+  selectProduct() {
+    this.productSelected.emit({
+      name: 'soap',
+      image: 'assets/images/soap.png',
+      description: 'Natural skin care soap.'
+    });
+  }
+}
+
+@Component({
+selector: 'app-socks',
+  standalone: true,
+  template: `
+    <div class="product-card" (click)="selectProduct()">
+      <img src="assets/images/socks.png" alt="socks" />
+      <h3>socks</h3>
+    </div>
+  `,
+  styles: [`
+    .product-card {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .product-card:hover {
+      background-color: #f9f9f9;
+    }
+  `]
+})
+export class SocksComponent {
+  @Output() productSelected = new EventEmitter<any>();
+
+  selectProduct() {
+    this.productSelected.emit({
+      name: 'socks',
+      image: 'assets/images/socks.png',
+      description: 'Comfortable and high quality socks.'
+    });
+  }
+}
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [CommonModule, ShampooComponent, SoapComponent, SocksComponent],
+  template: `
+    <main class="main">
+      <div class="container">
+        <!-- Left Panel for Product Details -->
+        <div class="details-panel">
+          <div *ngIf="selectedProduct">
+            <img [src]="selectedProduct.image" [alt]="selectedProduct.name" />
+            <h2>{{ selectedProduct.name }}</h2>
+            <p>{{ selectedProduct.description }}</p>
+          </div>
+          <p *ngIf="!selectedProduct">Click</p>
+        </div>
+        <!-- Right Panel for Products -->
+        <div class="products-list">
+          <app-shampoo (productSelected)="showDetails($event)"></app-shampoo>
+          <app-soap (productSelected)="showDetails($event)"></app-soap>
+          <app-socks (productSelected)="showDetails($event)"></app-socks>
+        </div>
+      </div>
+    </main>
+  `,
+  styles: [`
+    .container {
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+    }
+
+    .details-panel {
+      flex: 1;
+      padding: 20px;
+      border-right: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .details-panel img {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 1rem;
+    }
+
+    .products-list {
+      flex: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 20px;
+    }
+
+    .product-card {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .product-card:hover {
+      transform: scale(1.05);
+    }
+  `]
+})
+export class AppComponent {
+  title(title: any) {
+    throw new Error('Method not implemented.');
+  }
+  selectedProduct: any = null;
+
+  showDetails(product: any) {
+    this.selectedProduct = product;
+  }
+}

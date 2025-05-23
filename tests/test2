@@ -1,0 +1,140 @@
+import { Component} from '@angular/core';
+
+import { Output } from '@angular/core';
+import { EventEmitter } from '@angular/core';
+
+@Component({
+  selector: 'app-login',
+  standalone: true,
+
+  template: `
+  <div class="back">
+    <div class="log">
+      <form class="form">
+        <h3 class="as">ENG_ASMAA</h3>
+        <label>name:</label>
+        <input type="text" >
+        <br>
+        <label>password:</label>
+        <input type="password" >
+        <br>
+        <button class="button" type="button" (click)="onSubmit()">Submit</button>
+      </form>
+    </div></div>
+  `,
+  styles: [`
+  .body{
+    background:blue
+  }
+    .log {
+      width: 100%;
+      height: 390px;
+      margin-top: 20%;
+      margin-Left: 220%;
+      background-color: gray;
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .form {
+      width: 100%;
+      font-size: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .button {
+      align-self: center;
+      background-color: rgb(18, 51, 5);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .button:hover {
+      background-color: darkblue;
+    }
+    .as{
+      color:green;
+      margin-Left:15%;
+    }
+  `]
+})
+export class LoginComponent {
+  username: string = '';
+  password: string = '';
+
+  onSubmit() {
+    alert(`Username: ${this.username}, Password: ${this.password}`);
+  }
+}
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [CommonModule, LoginComponent],
+  template: `
+    <main class="main">
+      <div class="container">
+
+        <app-login></app-login>
+      </div>
+    </main>
+  `,
+  styles: [`
+    .container {
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+    }
+
+    .details-panel {
+      flex: 1;
+      padding: 20px;
+      border-right: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .details-panel img {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 1rem;
+    }
+
+    .products-list {
+      flex: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 20px;
+    }
+
+    .product-card {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .product-card:hover {
+      transform: scale(1.05);
+    }
+  `]
+})
+export class AppComponent {
+  selectedProduct: any = null;
+
+  showDetails(product: any) {
+    this.selectedProduct = product;
+  }
+}
