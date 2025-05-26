@@ -1,5 +1,6 @@
 package SemanticCheck;
 
+import SymbolTable.ImportTableRow;
 import SymbolTable.TableStructure;
 
 public class SemanticCheck {
@@ -41,24 +42,28 @@ public class SemanticCheck {
 
 
     private boolean checkSelector(TableStructure table) {
-        Integer componentLine = table.getRows().stream()
-                .filter(row -> row.getElementType().equals("decorator") &&
-                        row.getElementName().equals("@Component"))
-                .map(row -> row.getElementLine())
-                .findFirst().orElse(null);
 
-        if (componentLine == null) {
-            System.err.println("[Error] No @Component found in the code");
+        ImportTableRow componentRow = table.getImportRows().stream()
+                .filter(row -> "decorator".equals(row.getElementType()) &&
+                        "@Component".equals(row.getElementValue()))
+                .findFirst()
+                .orElse(null);
+
+        if (componentRow == null) {
+            System.err.println("[Error] @Component is missing ");
             return false;
         }
 
+        int componentLine = componentRow.getElementLine();
+
+
         boolean hasSelector = table.getRows().stream()
-                .anyMatch(row -> row.getElementType().equals("component-property") &&
-                        row.getElementName().equals("selector") &&
+                .anyMatch(row -> "component-property".equals(row.getElementType()) &&
+                        "selector".equals(row.getElementName()) &&
                         row.getElementLine() > componentLine);
 
         if (!hasSelector) {
-            System.err.println("[Error] Component is missing selector");
+            System.err.printf("[Error] Component is missing selector (after line %d)%n", componentLine);
             return false;
         }
 

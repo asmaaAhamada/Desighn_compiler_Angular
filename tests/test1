@@ -3,7 +3,7 @@ import  {Component} from '@angular/core';
 
 import { EventEmitter } from '@angular/core';
 
-({
+@Component({
 selector: 'app-socks',
   standalone: true,
   template: `
@@ -27,13 +27,7 @@ selector: 'app-socks',
 
 export class ShampooComponent {
   @Output() productSelected = new EventEmitter<any>();
-  selectProduct() {
-    this.productSelected.emit({
-      name: 'shampoo',
-      image: 'assets/images/image.png',
-      description: 'High quality hair nourishing shampoo.'
-    });
-  }
+
 }
 
 

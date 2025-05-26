@@ -6,7 +6,7 @@ import java.util.List;
 public class TableStructure {
     List<TableRow> rows = new ArrayList<>();
     List<ImportTableRow> importRows = new ArrayList<>();
-
+    List<TableRowFunction> functionRows = new ArrayList<>();
     public void addRow(String type, String name, int line, String value) {
         TableRow row = new TableRow(type, name, line, value);
         rows.add(row);
@@ -23,6 +23,13 @@ public class TableStructure {
 
     public List<ImportTableRow> getImportRows() {
         return importRows;
+    }
+    public void addFunctionRow(String type, String name, int line) {
+        functionRows.add(new TableRowFunction(type, name, line));
+    }
+
+    public List<TableRowFunction> getFunctionRows() {
+        return functionRows;
     }
 
     public void printTable() {
@@ -58,5 +65,18 @@ public class TableStructure {
         }
 
         System.out.printf("+------------+----------------+-------+------------+--------+%n");
+    }
+    public void printFunctionTable() {
+        System.out.println("Function Table:");
+        System.out.printf("+--------------+----------------+-------+%n");
+        System.out.printf("| Type         | Name           | Line  |%n");
+        System.out.printf("+--------------+----------------+-------+%n");
+
+        for (TableRowFunction row : functionRows) {
+            System.out.printf("| %-12s | %-14s | %-5d |%n",
+                    row.getType(), row.getName(), row.getLine());
+        }
+
+        System.out.printf("+--------------+----------------+-------+%n");
     }
 }

@@ -9,10 +9,14 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import SemanticCheck.SemanticCheck;
 import SemanticCheck.CheckImport;
+import SemanticCheck.FunctionErrorCheck;
 public class VisitorCompiler extends HTMLParserBaseVisitor {
     TableStructure symbolTable = new TableStructure();
 
@@ -31,17 +35,25 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
         // Print the symbol table at the end of parsing
         System.out.println("\n================== Symbol Table ==================");
         symbolTable.printTable();
+        SemanticCheck semanticCheck = new SemanticCheck(symbolTable);
+        boolean passed = semanticCheck.check();
+        System.out.println("\nSemantic check status: " + (passed ? "Passed ✅" : "Failed ❌"));
         System.out.println("\n================== Symbol Table2 ==================");
         symbolTable.printImportTable();
 
 
-        SemanticCheck semanticCheck = new SemanticCheck(symbolTable);
+
         CheckImport importc=new CheckImport(symbolTable);
 
-        boolean passed = semanticCheck.check();
+
         boolean passed1 = importc.check();
-        System.out.println("\nSemantic check status: " + (passed ? "Passed ✅" : "Failed ❌"));
+
         System.out.println("\nSemantic check status: " + (passed1 ? "Passed ✅" : "Failed ❌"));
+        System.out.println("\n================== Symbol Table3 ==================");
+        symbolTable.printFunctionTable();
+        FunctionErrorCheck function =new FunctionErrorCheck(symbolTable);
+        boolean passed2 = function.check();
+        System.out.println("\nSemantic check status: " + (passed2 ? "Passed ✅" : "Failed ❌"));
 
         return programNode;
     }
@@ -135,14 +147,15 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
         List<ComponentBody> bodyList = new ArrayList<>();
         int line = ctx.getStart().getLine();
 
-        // نضيف @Component إلى الجدولين
-        symbolTable.addImportRow("decorator", null, line, null, true, true);
-        symbolTable.addRow("decorator", "@Component", line, null);
+        symbolTable.addImportRow("decorator", "@Component", line, null, true, true);
+        System.out.println("Added decorator: " + "@Component" + " at line: " + line);
+
+//        symbolTable.addRow("decorator", "@Component", line, null);
 
         boolean hasSelector = false;
 
         for (HTMLParser.ComponentBodyContext bodyCtx : ctx.componentBody()) {
-            // نمر على كل body ونبحث عن selector داخله
+
             if (bodyCtx.SELECTOR() != null && bodyCtx.STRING_CONTENT() != null) {
                 hasSelector = true;
             }
@@ -151,7 +164,7 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
             bodyList.add(body);
         }
 
-        // ✅ التحقق: إذا مافي selector داخل جسم الكومبوننت
+
         if (!hasSelector) {
             System.err.printf("[Error] Component is missing selector at line %d%n", line);
         }
@@ -284,7 +297,14 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
         } else if (ctx.LPAREN() != null && ctx.RPAREN() != null) {
             attribute.setName(ctx.IDENTIFIER().getText());
             attribute.setValue(ctx.STRING_CONTENT().getText());
-            attribute.setType("paren");
+            attribute.setType("paren");if (ctx.STRING_CONTENT() != null) {
+                String rawValue = ctx.STRING_CONTENT().getText().replace("\"", "");
+                if (rawValue.contains("(")) {
+                    String functionName = rawValue.split("\\(")[0].trim();
+                    int line = ctx.getStart().getLine();
+                    symbolTable.addFunctionRow("function-call", functionName, line);
+                    System.out.println("📞 Found template function call: " + functionName + " at line " + line);
+                }}
         } else if (ctx.QUOTE().size() == 2) {
             attribute.setName(ctx.IDENTIFIER().getText());
             attribute.setValue(ctx.getText().split("=")[1].trim());
@@ -699,7 +719,13 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
     @Override
     public Object visitFunctionDeclaration(HTMLParser.FunctionDeclarationContext ctx) {
         FunctionDeclaration funcDecl = new FunctionDeclaration();
+        String functionName = ctx.IDENTIFIER().getText();
+        int line = ctx.getStart().getLine();
+        symbolTable.addFunctionRow("function", functionName, line);
+        System.out.println("Detected function: " + functionName + " at line " + line);
         if (ctx.FUNCTION() != null && ctx.IDENTIFIER() != null) {
+
+
             if (ctx.parameterList() != null) {
                 funcDecl.setParameterList((ParameterList) visit(ctx.parameterList()));
             }
@@ -751,17 +777,29 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
 
     @Override
     public Object visitCallFunctios(HTMLParser.CallFunctiosContext ctx) {
+
         CallFunctios call = new CallFunctios();
         call.setFunctionName(ctx.IDENTIFIER().getText());
-        if (ctx.expression() != null && !ctx.expression().isEmpty()) {
-            for (HTMLParser.ExpressionContext exprCtx : ctx.expression()) {
-                Expression expr = (Expression) visit(exprCtx);
-                call.addArgument(expr);
-            }
-        }
-        return call;
-    }
+        String full = ctx.getText(); // أو ctx.STRING() إذا كانت القيمة في STRING
+        Pattern pattern = Pattern.compile("(\\w+)\\s*\\(");  // التقاط اسم الدالة فقط
+        Matcher matcher = pattern.matcher(full);
 
+        if (matcher.find()) {
+            String functionName = matcher.group(1); // showDetails
+            int line = ctx.getStart().getLine();
+            symbolTable.addFunctionRow("function-call", functionName, line);
+            System.out.println("📞 Template function call: " + functionName + " at line " + line);
+
+            if (ctx.expression() != null && !ctx.expression().isEmpty()) {
+                for (HTMLParser.ExpressionContext exprCtx : ctx.expression()) {
+                    Expression expr = (Expression) visit(exprCtx);
+                    call.addArgument(expr);
+                }
+            }
+            return call;
+        }
+        return true;
+    }
     @Override
     public Object visitConsolDeclaration(HTMLParser.ConsolDeclarationContext ctx) {
         ConsolDeclaration consol = new ConsolDeclaration();
@@ -790,6 +828,7 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
     @Override
     public Object visitExpressionStatement(HTMLParser.ExpressionStatementContext ctx) {
         ExpressionStatement exprStmt = new ExpressionStatement();
+
         exprStmt.setExpression((Expression) visit(ctx.expression()));
         return exprStmt;
     }
