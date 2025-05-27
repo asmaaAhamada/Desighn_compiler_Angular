@@ -4,19 +4,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TableStructure {
-    List<TableRow> rows = new ArrayList<>();
-    List<ImportTableRow> importRows = new ArrayList<>();
 
+    // الجداول المختلفة
+    private List<TableRow> rows = new ArrayList<>();
+    private List<ImportTableRow> importRows = new ArrayList<>();
+    private List<TablerowComponent> componentRows = new ArrayList<>();
+
+    // إضافة صف لجدول الرموز العادي
     public void addRow(String type, String name, int line, String value) {
-        TableRow row = new TableRow(type, name, line, value);
-        rows.add(row);
+        rows.add(new TableRow(type, name, line, value));
     }
 
-    public void addImportRow(String type, String value, int line,String elementname, boolean isDeclared, boolean isUsed) {
-        ImportTableRow row = new ImportTableRow(type, value, line,elementname, isDeclared, isUsed);
-        importRows.add(row);
+    // إضافة صف لجدول import
+    public void addImportRow(String type, String value, int line, String elementName, boolean isDeclared, boolean isUsed) {
+        importRows.add(new ImportTableRow(type, value, line, elementName, isDeclared, isUsed));
     }
 
+    // إضافة صف لجدول الـ components
+    public void addComponentRow(String type, String name, int line) {
+        // يتم حساب hasSymbol تلقائياً داخل الكونسـتراكتور
+        componentRows.add(new TablerowComponent(type, name, line));
+    }
+
+    // getters
     public List<TableRow> getRows() {
         return rows;
     }
@@ -25,6 +35,11 @@ public class TableStructure {
         return importRows;
     }
 
+    public List<TablerowComponent> getComponentRows() {
+        return componentRows;
+    }
+
+    // طباعة جدول الرموز
     public void printTable() {
         System.out.println("Symbol Table:");
         System.out.printf("+------------+-------------+-------+----------------+%n");
@@ -42,6 +57,7 @@ public class TableStructure {
         System.out.printf("+------------+-------------+-------+----------------+%n");
     }
 
+    // طباعة جدول الـ import
     public void printImportTable() {
         System.out.println("Import Table:");
         System.out.printf("+------------+----------------+-------+------------+--------+%n");
@@ -58,5 +74,23 @@ public class TableStructure {
         }
 
         System.out.printf("+------------+----------------+-------+------------+--------+%n");
+    }
+
+    // طباعة جدول الـ components
+    public void printComponentTable() {
+        System.out.println("Component Table:");
+        System.out.printf("+------------+-------------+-------+------------+%n");
+        System.out.printf("| Type       | Name        | Line  | HasSymbol  |%n");
+        System.out.printf("+------------+-------------+-------+------------+%n");
+
+        for (TablerowComponent row : componentRows) {
+            System.out.printf("| %-10s | %-11s | %-5d | %-10s |%n",
+                    row.getElementType(),
+                    row.getElementName(),
+                    row.getElementLine(),
+                    row.hasSymbol() ? "true" : "false");
+        }
+
+        System.out.printf("+------------+-------------+-------+------------+%n");
     }
 }

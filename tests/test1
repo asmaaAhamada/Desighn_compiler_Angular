@@ -3,7 +3,7 @@ import  {Component} from '@angular/core';
 
 import { EventEmitter } from '@angular/core';
 
-({
+Component({
 selector: 'app-socks',
   standalone: true,
   template: `

@@ -13,6 +13,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import SemanticCheck.SemanticCheck;
 import SemanticCheck.CheckImport;
+import SemanticCheck.ComponentCheck;
 public class VisitorCompiler extends HTMLParserBaseVisitor {
     TableStructure symbolTable = new TableStructure();
 
@@ -31,17 +32,27 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
         // Print the symbol table at the end of parsing
         System.out.println("\n================== Symbol Table ==================");
         symbolTable.printTable();
+        SemanticCheck semanticCheck = new SemanticCheck(symbolTable);
+        boolean passed = semanticCheck.check();
+        System.out.println("\nSemantic check status: " + (passed ? "Passed ✅" : "Failed ❌"));
+
         System.out.println("\n================== Symbol Table2 ==================");
         symbolTable.printImportTable();
-
-
-        SemanticCheck semanticCheck = new SemanticCheck(symbolTable);
         CheckImport importc=new CheckImport(symbolTable);
 
-        boolean passed = semanticCheck.check();
         boolean passed1 = importc.check();
-        System.out.println("\nSemantic check status: " + (passed ? "Passed ✅" : "Failed ❌"));
         System.out.println("\nSemantic check status: " + (passed1 ? "Passed ✅" : "Failed ❌"));
+
+        System.out.println("\n================== Symbol Table3 ==================");
+        symbolTable.printComponentTable();
+
+
+        ComponentCheck component = new ComponentCheck(symbolTable);
+
+
+        boolean passed2 = component.check();
+
+        System.out.println("\nSemantic check status: " + (passed2 ? "Passed ✅" : "Failed ❌"));
 
         return programNode;
     }
@@ -138,7 +149,7 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
         // نضيف @Component إلى الجدولين
         symbolTable.addImportRow("decorator", null, line, null, true, true);
         symbolTable.addRow("decorator", "@Component", line, null);
-
+symbolTable.addComponentRow("decorator","@Component",line);
         boolean hasSelector = false;
 
         for (HTMLParser.ComponentBodyContext bodyCtx : ctx.componentBody()) {
