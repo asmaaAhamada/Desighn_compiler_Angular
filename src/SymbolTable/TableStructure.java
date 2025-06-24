@@ -7,6 +7,8 @@ public class TableStructure {
     List<TableRow> rows = new ArrayList<>();
     List<ImportTableRow> importRows = new ArrayList<>();
     List<TableRowFunction> functionRows = new ArrayList<>();
+    List<TableRowTag> tagRows = new ArrayList<>();
+
     public void addRow(String type, String name, int line, String value) {
         TableRow row = new TableRow(type, name, line, value);
         rows.add(row);
@@ -16,10 +18,15 @@ public class TableStructure {
         ImportTableRow row = new ImportTableRow(type, value, line,elementname, isDeclared, isUsed);
         importRows.add(row);
     }
+    public void addTagRow(String tagName, String type, int line, int column, String status) {
+        tagRows.add(new TableRowTag(tagName, type, line, column, status));
+    }
 
     public List<TableRow> getRows() {
         return rows;
     }
+
+
 
     public List<ImportTableRow> getImportRows() {
         return importRows;
@@ -30,6 +37,10 @@ public class TableStructure {
 
     public List<TableRowFunction> getFunctionRows() {
         return functionRows;
+    }
+
+    public List<TableRowTag> getTagRows() {
+        return tagRows;
     }
 
     public void printTable() {
@@ -79,4 +90,23 @@ public class TableStructure {
 
         System.out.printf("+--------------+----------------+-------+%n");
     }
+
+    public void printTagTable() {
+        System.out.println("Tag Table:");
+        System.out.printf("+------------+--------+------+--------+----------------------+%n");
+        System.out.printf("| Tag Name   | Type   | Line | Column | Status               |%n");
+        System.out.printf("+------------+--------+------+--------+----------------------+%n");
+
+        for (TableRowTag row : tagRows) {
+            System.out.printf("| %-10s | %-6s | %-4d | %-6d | %-20s |%n",
+                    row.getTagName(),
+                    row.getType(),
+                    row.getLine(),
+                    row.getColumn(),
+                    row.getStatus());
+        }
+
+        System.out.printf("+------------+--------+------+--------+----------------------+%n");
+    }
+
 }

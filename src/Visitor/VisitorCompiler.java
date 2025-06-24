@@ -17,6 +17,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import SemanticCheck.SemanticCheck;
 import SemanticCheck.CheckImport;
 import SemanticCheck.FunctionErrorCheck;
+import SemanticCheck.CheckTag;
 public class VisitorCompiler extends HTMLParserBaseVisitor {
     TableStructure symbolTable = new TableStructure();
 
@@ -54,7 +55,12 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
         FunctionErrorCheck function =new FunctionErrorCheck(symbolTable);
         boolean passed2 = function.check();
         System.out.println("\nSemantic check status: " + (passed2 ? "Passed ✅" : "Failed ❌"));
-
+////////////////
+        CheckTag tagChecker = new CheckTag(symbolTable);
+        boolean tagsValid = tagChecker.check();
+        System.out.println("Tag matching status: " + (tagsValid ? "Passed ✅" : "Failed ❌"));
+        System.out.println("\n================== Symbol Table3 ==================");
+        symbolTable.printTagTable();
         return programNode;
     }
 
@@ -147,10 +153,10 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
         List<ComponentBody> bodyList = new ArrayList<>();
         int line = ctx.getStart().getLine();
 
-        symbolTable.addImportRow("decorator", "@Component", line, null, true, true);
-        System.out.println("Added decorator: " + "@Component" + " at line: " + line);
 
-//        symbolTable.addRow("decorator", "@Component", line, null);
+
+      symbolTable.addRow("decorator", "@Component", line, null);
+//        symbolTable.addImportRow("decorator", "@Component", line, null, true, true);
 
         boolean hasSelector = false;
 
@@ -233,9 +239,31 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
     @Override
     public Object visitHtmlElement(HTMLParser.HtmlElementContext ctx) {
         HtmlElement element = new HtmlElement();
-        if (ctx.HTML_ELEMENT() != null) {
-            element.setTagName(ctx.HTML_ELEMENT(0).getText());
+        String tagName = "";
+
+
+        if (ctx.SLASH() != null && ctx.CLOUSE_TAG() != null) {
+            tagName = ctx.HTML_ELEMENT(0).getText();
+            element.setTagName(tagName);
+
+            int line = ctx.getStart().getLine();
+            int column = ctx.getStart().getCharPositionInLine();
+            // أضف كـ self-closing فقط مرة واحدة
+            symbolTable.addTagRow(tagName, "self-closing", line, column, "closed");
+
+        } else if (ctx.HTML_ELEMENT() != null && ctx.HTML_ELEMENT().size() > 0) {
+            // هذه حالة التاغ المفتوح فقط أو المفتوح مع محتوى وأطفال
+            tagName = ctx.HTML_ELEMENT(0).getText();
+            element.setTagName(tagName);
+
+            int line = ctx.getStart().getLine();
+            int column = ctx.getStart().getCharPositionInLine();
+            symbolTable.addTagRow(tagName, "open", line, column, "pending");
         }
+
+
+
+
         for (ParseTree child : ctx.children) {
             if (child instanceof HTMLParser.AttributeContext) {
                 Attribute attr = (Attribute) visit(child);
@@ -251,8 +279,15 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
                 element.getChildren().add(content);
             }
         }
+        if (ctx.TAG_OPEN_SLASH() != null && ctx.HTML_ELEMENT().size() > 1) {
+            String closeTagName = ctx.HTML_ELEMENT(1).getText();
+            int closeLine = ctx.TAG_OPEN_SLASH().getSymbol().getLine();
+            int closeColumn = ctx.TAG_OPEN_SLASH().getSymbol().getCharPositionInLine();
+            symbolTable.addTagRow(closeTagName, "close", closeLine, closeColumn, "pending");
+        }
         return element;
     }
+
 
     @Override
     public Object visitHtmlContent(HTMLParser.HtmlContentContext ctx) {
@@ -303,7 +338,6 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
                     String functionName = rawValue.split("\\(")[0].trim();
                     int line = ctx.getStart().getLine();
                     symbolTable.addFunctionRow("function-call", functionName, line);
-                    System.out.println("📞 Found template function call: " + functionName + " at line " + line);
                 }}
         } else if (ctx.QUOTE().size() == 2) {
             attribute.setName(ctx.IDENTIFIER().getText());
@@ -460,6 +494,7 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
 
         boolean hasCurly = fullImport.contains("{");
         symbolTable.addImportRow("import", fullImport, line, importedName, true, false);
+        symbolTable.addImportRow("import", "Component", line, "Component", true, false);
 
         return importModel;
     }
@@ -721,8 +756,8 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
         FunctionDeclaration funcDecl = new FunctionDeclaration();
         String functionName = ctx.IDENTIFIER().getText();
         int line = ctx.getStart().getLine();
-        symbolTable.addFunctionRow("function", functionName, line);
-        System.out.println("Detected function: " + functionName + " at line " + line);
+        symbolTable.addFunctionRow("function-call", functionName, line);
+
         if (ctx.FUNCTION() != null && ctx.IDENTIFIER() != null) {
 
 
@@ -786,14 +821,15 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
 
         if (matcher.find()) {
             String functionName = matcher.group(1); // showDetails
-            int line = ctx.getStart().getLine();
-            symbolTable.addFunctionRow("function-call", functionName, line);
-            System.out.println("📞 Template function call: " + functionName + " at line " + line);
 
             if (ctx.expression() != null && !ctx.expression().isEmpty()) {
                 for (HTMLParser.ExpressionContext exprCtx : ctx.expression()) {
                     Expression expr = (Expression) visit(exprCtx);
                     call.addArgument(expr);
+                    int line = ctx.getStart().getLine();
+                    symbolTable.addFunctionRow("function-call", functionName, line);
+                    System.out.println("📞 Template function call: " + functionName + " at line " + line);
+
                 }
             }
             return call;

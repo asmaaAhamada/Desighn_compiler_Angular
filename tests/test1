@@ -55,13 +55,7 @@ selector: 'app-soap',
 export class SoapComponent {
   @Output() productSelected = new EventEmitter<any>();
 
-  selectProduct() {
-    this.productSelected.emit({
-      name: 'soap',
-      image: 'assets/images/soap.png',
-      description: 'Natural skin care soap.'
-    });
-  }
+
 }
 
 @Component({
@@ -88,13 +82,7 @@ selector: 'app-socks',
 export class SocksComponent {
   @Output() productSelected = new EventEmitter<any>();
 
-  selectProduct() {
-    this.productSelected.emit({
-      name: 'socks',
-      image: 'assets/images/socks.png',
-      description: 'Comfortable and high quality socks.'
-    });
-  }
+
 }
 
 @Component({
@@ -167,12 +155,9 @@ export class SocksComponent {
   `]
 })
 export class AppComponent {
-  title(title: any) {
-    throw new Error('Method not implemented.');
-  }
+
   selectedProduct: any = null;
 
-  showDetails(product: any) {
-    this.selectedProduct = product;
-  }
+
+\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 }

@@ -1,4 +1,4 @@
-import { Component} from '@angular/core';
+
 
 import { Output } from '@angular/core';
 import { EventEmitter } from '@angular/core';
@@ -37,7 +37,7 @@ import { EventEmitter } from '@angular/core';
       justify-content: center;
       align-items: center;
       padding: 20px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 8px ;
     }
     .form {
       width: 100%;
@@ -48,7 +48,7 @@ import { EventEmitter } from '@angular/core';
     }
     .button {
       align-self: center;
-      background-color: rgb(18, 51, 5);
+
       color: white;
       border: none;
       border-radius: 5px;
@@ -70,9 +70,7 @@ export class LoginComponent {
   username: string = '';
   password: string = '';
 
-  onSubmit() {
-    alert(`Username: ${this.username}, Password: ${this.password}`);
-  }
+
 }
 
 @Component({
@@ -134,7 +132,5 @@ export class LoginComponent {
 export class AppComponent {
   selectedProduct: any = null;
 
-  showDetails(product: any) {
-    this.selectedProduct = product;
-  }
+
 }
