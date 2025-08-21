@@ -3,7 +3,7 @@ package AST;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CssRule {
+public class CssRule extends Program {
     private Selector selector;
     private List<CssProperty> cssProperty = new ArrayList<>();
     private CallFunctios callFunctios;

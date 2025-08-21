@@ -8,7 +8,7 @@ public class TableStructure {
     List<ImportTableRow> importRows = new ArrayList<>();
     List<TableRowFunction> functionRows = new ArrayList<>();
     List<TableRowTag> tagRows = new ArrayList<>();
-
+    List<SelectorRow> selectorRows = new ArrayList<>();
     public void addRow(String type, String name, int line, String value) {
         TableRow row = new TableRow(type, name, line, value);
         rows.add(row);
@@ -22,6 +22,9 @@ public class TableStructure {
         tagRows.add(new TableRowTag(tagName, type, line, column, status));
     }
 
+    public void addSelector(String name, int line, int column) {
+        selectorRows.add(new SelectorRow(name, line, column));
+    }
     public List<TableRow> getRows() {
         return rows;
     }
@@ -42,7 +45,9 @@ public class TableStructure {
     public List<TableRowTag> getTagRows() {
         return tagRows;
     }
-
+    public List<SelectorRow> getSelectorRows() {
+        return selectorRows;
+    }
     public void printTable() {
         System.out.println("Symbol Table:");
         System.out.printf("+------------+-------------+-------+----------------+%n");
@@ -108,5 +113,17 @@ public class TableStructure {
 
         System.out.printf("+------------+--------+------+--------+----------------------+%n");
     }
+    public void printSelectorTable() {
+        System.out.println("Selector Table:");
+        System.out.printf("+----------------------+--------+--------+%n");
+        System.out.printf("| Selector Name        | Line   | Column |%n");
+        System.out.printf("+----------------------+--------+--------+%n");
 
+        for (SelectorRow row : selectorRows) {
+            System.out.printf("| %-20s | %-6d | %-6d |%n",
+                    row.getName(), row.getLine(), row.getColumn());
+        }
+
+        System.out.printf("+----------------------+--------+--------+%n");
+    }
 }

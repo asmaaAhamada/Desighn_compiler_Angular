@@ -18,6 +18,7 @@ import SemanticCheck.SemanticCheck;
 import SemanticCheck.CheckImport;
 import SemanticCheck.FunctionErrorCheck;
 import SemanticCheck.CheckTag;
+import SemanticCheck.CheckUniqueSelector;
 public class VisitorCompiler extends HTMLParserBaseVisitor {
     TableStructure symbolTable = new TableStructure();
 
@@ -28,10 +29,16 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
     public Object visitProgram(HTMLParser.ProgramContext ctx) {
         Program programNode = new Program();
         List<Statement> statements = new ArrayList<>();
+        writeToFile("<div class=\"component-container\">\n", htmlWriter);
         for (HTMLParser.StatementContext stmtCtx : ctx.statement()) {
             Statement stmt = (Statement) visit(stmtCtx);
             statements.add(stmt);
         }
+        writeToFile("</div>\n", htmlWriter);
+
+        // نهاية السكربت
+        closeWriters();
+        return "";
         programNode.setStatementArrayList(statements);
         // Print the symbol table at the end of parsing
         System.out.println("\n================== Symbol Table ==================");
@@ -61,6 +68,22 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
         System.out.println("Tag matching status: " + (tagsValid ? "Passed ✅" : "Failed ❌"));
         System.out.println("\n================== Symbol Table3 ==================");
         symbolTable.printTagTable();
+
+
+        //////////////
+        CheckUniqueSelector checkUniqueSelector=new CheckUniqueSelector(symbolTable);
+        boolean passed4 = checkUniqueSelector.check();
+        System.out.println("Tag matching status: " + (passed4 ? "Passed ✅" : "Failed ❌"));
+        System.out.println("\n================== Symbol Table4 ==================");
+        symbolTable.printSelectorTable();
+
+
+
+
+
+
+
+
         return programNode;
     }
 
@@ -188,7 +211,10 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
             selector = selector.substring(1, selector.length() - 1);
             body.setSelector(selector);
             int line = ctx.getStart().getLine();
+            int column = ctx.getStart().getCharPositionInLine();
+
             symbolTable.addRow("component-property", "selector", line, selector);
+            symbolTable.addSelector(selector, line, column);
         }
         if (ctx.STANDALONE() != null) {
             boolean standaloneValue = ctx.TRUE() != null;
@@ -858,6 +884,9 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
         ThrowStatement throwStmt = new ThrowStatement();
         throwStmt.setExceptionName(ctx.IDENTIFIER().getText());
         throwStmt.setMessage(ctx.STRING_CONTENT().getText());
+        String line = "throw new " + ctx.IDENTIFIER().getText() + "(" + ctx.STRING_CONTENT().getText() + ");";
+        writeToFile(line + "\n", tsWriter);
+        return line;
         return throwStmt;
     }
 
@@ -906,6 +935,9 @@ public class VisitorCompiler extends HTMLParserBaseVisitor {
         thisStmt.setVariableName(ctx.IDENTIFIER(0).getText());
         thisStmt.setAssignedName(ctx.IDENTIFIER(1).getText());
         return thisStmt;
+        String line = "this." + ctx.IDENTIFIER(0).getText() + " = " + ctx.IDENTIFIER(1).getText() + ";";
+        writeToFile(line + "\n", tsWriter);
+        return line;
     }
 
     @Override
